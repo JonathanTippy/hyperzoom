@@ -1,8 +1,10 @@
-pub mod constants;
-pub mod numtypes;
-pub mod mandelbrot;
+pub(crate) mod constants;
+pub(crate) mod numtypes;
+pub(crate) mod mandelbrot;
+pub(crate) mod reference_orbit;
+pub(crate) mod perturbation;
 #[cfg(test)]
 mod tests;
 
-pub use numtypes::{IntExp, Mandelbrotable};
-pub use mandelbrot::{Point, compute_r_squared, check_bailout, iterate_z, iterate_point};
+pub use numtypes::*;
+pub use mandelbrot::*;

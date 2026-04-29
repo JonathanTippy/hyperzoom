@@ -1,7 +1,10 @@
 [package]
-name = "mandelbrotlib"
-version = "0.1.0"
+name = "hyperzoom"
+version = "0.0.1"
 edition = "2024"
 
 [dependencies]
 rug = "1.29.0"
+
+[dev-dependencies]
+rand = "0.8"

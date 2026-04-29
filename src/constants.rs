@@ -1,1 +1,27 @@
-pub(crate) const INTEXP_WARNING_SIZE:u32 = 100;
+pub(crate) const INTEXP_WARNING_SIZE: u32 = 100;
+pub(crate) const EPSILON_F32: f32 = 1e-5;
+pub(crate) const EPSILON_F64: f64 = 1e-9;
+pub(crate) const BAILOUT_RADIUS_SQUARED: f64 = 4.0;
+pub(crate) const BAILOUT_RADIUS: f64 = 2.0;
+
+pub(crate) const TEST_POINTS_F64: [(f64, f64, f64, f64); 8] = [
+    (0.3, 0.3, 0.1, 0.1),
+    (0.3, 0.3, -0.05, -0.05),
+    (0.25, 0.25, 0.01, 0.01),
+    (0.2, 0.2, -0.05, -0.05),
+    (0.2, 0.2, -0.1, -0.1),
+    (0.3, 0.3, 0.001, 0.001),
+    (0.2, 0.2, -0.05, -0.05),
+    (0.25, 0.25, 0.01, 0.01),
+];
+
+pub(crate) const TEST_POINTS_F32: [(f32, f32, f32, f32); 8] = [
+    (0.3, 0.3, 0.1, 0.1),
+    (0.3, 0.3, -0.05, -0.05),
+    (0.25, 0.25, 0.01, 0.01),
+    (0.2, 0.2, -0.05, -0.05),
+    (0.2, 0.2, -0.1, -0.1),
+    (0.3, 0.3, 0.001, 0.001),
+    (0.2, 0.2, -0.05, -0.05),
+    (0.25, 0.25, 0.01, 0.01),
+];

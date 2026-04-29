@@ -2,7 +2,6 @@ use rug::*;
 use std::ops::{Add, Sub, Mul, Shl, Shr};
 use std::cmp::min;
 use std::fmt;
-
 use crate::constants::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -11,7 +10,6 @@ pub struct IntExp {
     pub exp: i32,
 }
 
-// Borrowed-borrowed operations (zero clones needed) - &T + &T -> T
 impl Add<&IntExp> for &IntExp {
     type Output = IntExp;
     fn add(self, other:&IntExp) -> IntExp {
@@ -43,7 +41,6 @@ impl Mul<&IntExp> for &IntExp {
     }
 }
 
-// Owned-owned operations (delegate to borrowed for consistency)
 impl Add for IntExp {
     type Output = Self;
     fn add(self, other:Self) -> Self {
@@ -65,7 +62,6 @@ impl Mul for IntExp {
     }
 }
 
-// Owned-borrowed operations (for flexibility)
 impl Add<&IntExp> for IntExp {
     type Output = Self;
     fn add(self, other:&IntExp) -> Self {
@@ -109,9 +105,6 @@ impl From<i32> for IntExp {
 
 impl fmt::Display for IntExp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.val.significant_bits() > INTEXP_WARNING_SIZE {
-            println!("WARNING: intexp passed warning size");
-        }
         if self.exp >= 0 {
             write!(f, "{}", (self.val.clone()<<self.exp as u32).to_string())?;
             Ok(())
@@ -138,22 +131,21 @@ impl IntExp {
     }
 }
 
-// Mandelbrotable trait with borrowed-borrowed operations (&T + &T -> T)
-pub trait Mandelbrotable: 
-    Clone 
-    + Add<Output=Self> 
-    + Sub<Output=Self> 
+pub trait Mandelbrotable:
+    Clone
+    + Add<Output=Self>
+    + Sub<Output=Self>
     + Mul<Output=Self>
-    + for<'a> Add<&'a Self, Output=Self> 
-    + for<'a> Sub<&'a Self, Output=Self> 
+    + for<'a> Add<&'a Self, Output=Self>
+    + for<'a> Sub<&'a Self, Output=Self>
     + for<'a> Mul<&'a Self, Output=Self>
-    + PartialOrd 
-    + Sized 
+    + PartialOrd
+    + Sized
 {
     fn from_f64(v: f64) -> Self;
+    fn to_f64(self) -> f64;
 }
 
-// Implement Ord for IntExp
 impl PartialOrd for IntExp {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
@@ -162,7 +154,6 @@ impl PartialOrd for IntExp {
 
 impl Ord for IntExp {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        // Compare by value first (scaled to same exponent), then by exponent
         let common_exp = self.exp.max(other.exp);
         let self_scaled = if common_exp >= self.exp { 
             self.val.clone() << (common_exp - self.exp) as u32 
@@ -180,47 +171,67 @@ impl Ord for IntExp {
 
 impl From<f64> for IntExp {
     fn from(value: f64) -> Self {
-        // Convert f64 to IntExp by parsing the integer part
         let int_part = value.trunc() as i64;
         IntExp { val: Integer::from(int_part), exp: 0 }
     }
 }
 
-impl Mandelbrotable for IntExp {
-    fn from_f64(v: f64) -> Self {
-        let int_part = v.trunc() as i64;
-        IntExp { val: Integer::from(int_part), exp: 0 }
-    }
-}
-
-// Implement Mandelbrotable for f32, f64, and rug::Float
 impl Mandelbrotable for f32 {
     fn from_f64(v: f64) -> Self { v as f32 }
+    fn to_f64(self) -> f64 { self as f64 }
 }
 
 impl Mandelbrotable for f64 {
     fn from_f64(v: f64) -> Self { v }
+    fn to_f64(self) -> f64 { self }
 }
 
 impl Mandelbrotable for Float {
-    fn from_f64(v: f64) -> Self { 
+    fn from_f64(v: f64) -> Self {
         Float::with_val_64(1024, v)
+    }
+    fn to_f64(self) -> f64 { rug::Float::to_f64(&self) }
+}
+
+impl IntExp {
+    pub fn to_f32(&self) -> f32 {
+        if self.exp >= 0 {
+            (self.val.clone() << self.exp as u32).to_f32()
+        } else {
+            (self.val.clone() >> (-self.exp) as u32).to_f32()
+        }
+    }
+    
+    pub fn to_f64(&self) -> f64 {
+        if self.exp >= 0 {
+            (self.val.clone() << self.exp as u32).to_f64()
+        } else {
+            (self.val.clone() >> (-self.exp) as u32).to_f64()
+        }
+    }
+    
+    pub fn to_float(&self) -> Float {
+        if self.exp >= 0 {
+            Float::with_val_64(1024, self.val.clone() << self.exp as u32)
+        } else {
+            Float::with_val_64(1024, self.val.clone() >> (-self.exp) as u32)
+        }
     }
 }
 
-pub trait Abs {
+pub trait AbsoluteValue {
     fn abs(self) -> Self;
 }
 
-impl Abs for f32 {
+impl AbsoluteValue for f32 {
     fn abs(self) -> Self { self.abs() }
 }
 
-impl Abs for f64 {
+impl AbsoluteValue for f64 {
     fn abs(self) -> Self { self.abs() }
 }
 
-pub trait Gt: Copy {
+pub trait GreaterThan: Copy {
     fn gt(self, a:Self) -> bool;
 }
 
